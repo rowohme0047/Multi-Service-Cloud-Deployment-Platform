@@ -6,10 +6,10 @@ This repository contains the Ansible-based deployment solution for the Applicati
 
 The application is distributed across 4 VMs as follows:
 
-- **VM1 (3.81.234.63)** - Postgres: 1 container
-- **VM2 (54.224.159.62)** - Neo4j: 1 container  
-- **VM3 (54.196.81.150)** - Kafka: 1 container
-- **VM4 (98.81.2.3)** - Backend: 12 containers
+- **VM1 ** - Postgres: 1 container
+- **VM2 ** - Neo4j: 1 container  
+- **VM3 ** - Kafka: 1 container
+- **VM4 ** - Backend: 12 containers
   - Agent: 3 containers
   - GraphDB: 2 containers
   - S3: 1 container
