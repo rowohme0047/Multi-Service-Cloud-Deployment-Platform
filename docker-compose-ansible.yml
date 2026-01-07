@@ -1,0 +1,13 @@
+services:
+  ansible:
+    build: .
+    container_name: ansible-controller
+    volumes:
+      - .:/ansible
+      - ${USERPROFILE}/.ssh:/home/ansible/.ssh:ro
+    working_dir: /ansible
+    stdin_open: true
+    tty: true
+    network_mode: host
+    environment:
+      - ANSIBLE_HOST_KEY_CHECKING=False

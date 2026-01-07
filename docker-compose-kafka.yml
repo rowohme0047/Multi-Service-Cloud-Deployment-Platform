@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  kafka:
+    image: ngdmapo/dmap_app_modernization:kafka-v0.0.0
+    container_name: kafka
+    restart: unless-stopped
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=localhost:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://50.17.52.112:9092
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    networks:
+      - kafka-network
+
+volumes:
+  kafka_data:
+
+networks:
+  kafka-network:
+    driver: bridge

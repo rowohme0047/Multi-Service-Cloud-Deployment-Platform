@@ -1,0 +1,6 @@
+{
+  "vm1": ["3.81.234.63", "ubuntu", "postgres"],
+  "vm2": ["54.224.159.62", "ubuntu", "neo4j"],
+  "vm3": ["54.196.81.150", "ubuntu", "kafka"],
+  "vm4": ["98.81.2.3", "ubuntu", "backend"]
+}

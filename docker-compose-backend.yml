@@ -1,0 +1,152 @@
+version: '3.8'
+
+services:
+  agent-1:
+    image: ngdmapo/dmap_app_modernization:agent-v0.0.0
+    container_name: agent-1
+    restart: unless-stopped
+    ports:
+      - "8888:8888"
+    networks:
+      - backend-network
+    environment:
+      - POSTGRES_CONNECTION_STRING=postgresql+psycopg2://agent:F0xC0nagndp32x@54.160.219.136:5432/agent_dmap
+      - AGENT_ID=1
+
+
+  # agent-2:
+  #   image: ngdmapo/dmap_app_modernization:agent-v0.0.0
+  #   container_name: agent-2
+  #   restart: unless-stopped
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - AGENT_ID=2
+  #     - POSTGRES_HOST=3.81.234.63
+  #     - NEO4J_HOST=54.224.159.62
+  #     - KAFKA_HOST=54.196.81.150
+
+  # agent-3:
+  #   image: ngdmapo/dmap_app_modernization:agent-v0.0.0
+  #   container_name: agent-3
+  #   restart: unless-stopped
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - AGENT_ID=3
+  #     - POSTGRES_HOST=3.81.234.63
+  #     - NEO4J_HOST=54.224.159.62
+  #     - KAFKA_HOST=54.196.81.150
+
+  graphdb-1:
+    image: ngdmapo/dmap_app_modernization:graphdb-v0.0.0
+    container_name: graphdb-1
+    restart: unless-stopped
+    ports:
+      - "8889:8889"
+    networks:
+      - backend-network
+    environment:
+      - GRAPHDB_ID=1
+      - NEO4J_URI=bolt://54.221.36.190:7687
+      - DATABASE_URL=postgresql+psycopg2://graphdb:F0xC0ngrpdp87z@54.160.219.136:5432/graphdb_dmap
+
+
+  # graphdb-2:
+  #   image: ngdmapo/dmap_app_modernization:graphdb-v0.0.0
+  #   container_name: graphdb-2
+  #   restart: unless-stopped
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - GRAPHDB_ID=2
+  #     - NEO4J_HOST=54.224.159.62
+
+  s3:
+    image: ngdmapo/dmap_app_modernization:s3-v0.0.0
+    container_name: s3
+    restart: unless-stopped
+    networks:
+      - backend-network
+    ports:
+      - "9200:9200"
+
+  nginx:
+    image: ngdmapo/dmap_app_modernization:nginx-v0.0.0
+    container_name: nginx
+    restart: unless-stopped
+    networks:
+      - backend-network
+    ports:
+      - "80:80"
+      - "443:443"
+
+  documentgen:
+    image: ngdmapo/dmap_app_modernization:documentgen-v0.0.0
+    container_name: documentgen
+    restart: unless-stopped
+    ports:
+      - "9100:5001"
+    networks:
+      - backend-network
+    environment:
+      - POSTGRES_HOST=54.160.219.136
+
+  kafka-openai-1:
+    image: ngdmapo/dmap_app_modernization:kafka_openai-v0.0.0
+    container_name: kafka-openai-1
+    restart: unless-stopped
+    ports:
+      - "5001:5001"
+      - "5678:5678"
+    networks:
+      - backend-network
+    environment:
+      - OPENAI_ID=1
+      - KAFKA_HOST=10.0.0.81
+      - FLASK_APP=app.py  
+      - FLASK_ENV=development
+      - FLASK_PORT=5001
+      - KAFKA_BOOTSTRAP_SERVERS=50.17.52.112:9092
+      - CORS_ORIGINS="http://localhost:8080,http://localhost:8087,http://localhost:8088,http://localhost:4200,http://air-ui-frontend"
+      - CORS_METHODS="GET,POST,PUT,DELETE,OPTIONS"
+      - CORS_HEADERS="Content-Type,Authorization,Accept,Origin,X-Requested-With"
+      - CORS_CREDENTIALS="true"
+      - DMAP_REPO_ROOT=/shared
+      - DMAP_TOMCAT_JAR=/shared/java-agent/target/java-agent-1.0-SNAPSHOT-jar-with-dependencies.jar
+      - DMAP_WEBLOGIC_JAR=/shared/java-agent-jar-weblogic/java-agent-1.0-SNAPSHOT-jar-with-dependencies.jar
+
+  # kafka-openai-2:
+  #   image: ngdmapo/dmap_app_modernization:kafka_openai-v0.0.0
+  #   container_name: kafka-openai-2
+  #   restart: unless-stopped
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - OPENAI_ID=2
+  #     - KAFKA_HOST=54.196.81.150
+
+  # kafka-openai-3:
+  #   image: ngdmapo/dmap_app_modernization:kafka_openai-v0.0.0
+  #   container_name: kafka-openai-3
+  #   restart: unless-stopped
+  #   networks:
+  #     - backend-network
+  #   environment:
+  #     - OPENAI_ID=3
+  #     - KAFKA_HOST=54.196.81.150
+
+  ai-infra-provisioning:
+    image: ngdmapo/dmap_ai_infra_provisioning_service:latest
+    container_name: ai-infra-provisioning
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    networks:
+      - backend-network
+    environment:
+      - POSTGRES_HOST=54.160.219.136
+
+networks:
+  backend-network:
+    driver: bridge

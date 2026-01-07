@@ -1,0 +1,31 @@
+all:
+  children:
+    backend:
+      hosts:
+        vm4:
+          ansible_host: 3.93.70.249
+          ansible_user: ubuntu
+    kafka:
+      hosts:
+        vm3:
+          ansible_host: 52.90.125.49
+          ansible_user: ubuntu
+    neo4j:
+      hosts:
+        vm2:
+          ansible_host: 54.205.202.78
+          ansible_user: ubuntu
+    postgres:
+      hosts:
+        vm1:
+          ansible_host: 54.209.105.96
+          ansible_user: ubuntu
+  vars:
+    ansible_ssh_common_args: -o StrictHostKeyChecking=no
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+    docker_hub_password: '{{ lookup(''env'', ''DOCKER_HUB_PASSWORD'') | default('''')
+      }}'
+    docker_hub_username: '{{ lookup(''env'', ''DOCKER_HUB_USERNAME'') | default(''ngdmapo'')
+      }}'
+    docker_registry: ngdmapo
+    docker_repo: dmap_app_modernization

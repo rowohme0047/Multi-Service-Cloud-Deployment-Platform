@@ -1,0 +1,96 @@
+---
+- name: Check and Install Docker on all VMs
+  hosts: all
+  become: yes
+  tasks:
+    - name: Check if Docker is already installed
+      command: docker --version
+      register: docker_check
+      failed_when: false
+      changed_when: false
+
+    - name: Check if Docker Compose is already installed
+      command: docker compose version
+      register: docker_compose_check
+      failed_when: false
+      changed_when: false
+
+    - name: Display current Docker status
+      debug:
+        msg: 
+          - "Docker installed: {{ 'Yes' if docker_check.rc == 0 else 'No' }}"
+          - "Docker Compose installed: {{ 'Yes' if docker_compose_check.rc == 0 else 'No' }}"
+
+    - name: Update package index
+      shell: sudo apt update -y
+      when: docker_check.rc != 0 or docker_compose_check.rc != 0
+
+    - name: Install Docker using docker.io package
+      shell: sudo apt install docker.io -y
+      when: docker_check.rc != 0
+
+    - name: Create Docker CLI plugins directory and install Docker Compose
+      shell: |
+        sudo mkdir -p /usr/lib/docker/cli-plugins/
+        sudo curl -SL https://github.com/docker/compose/releases/download/v2.29.2/docker-compose-linux-x86_64 \
+          -o /usr/lib/docker/cli-plugins/docker-compose
+        sudo chmod +x /usr/lib/docker/cli-plugins/docker-compose
+      when: docker_compose_check.rc != 0
+
+    - name: Install Docker Buildx plugin
+      shell: |
+        sudo mkdir -p /usr/lib/docker/cli-plugins/
+        sudo curl -SL https://github.com/docker/buildx/releases/download/v0.19.2/buildx-v0.19.2.linux-amd64 \
+          -o /usr/lib/docker/cli-plugins/docker-buildx
+        sudo chmod +x /usr/lib/docker/cli-plugins/docker-buildx
+      when: docker_check.rc != 0
+
+    - name: Start and enable Docker service
+      shell: |
+        sudo systemctl start docker
+        sudo systemctl enable docker
+      when: docker_check.rc != 0
+
+    - name: Add ubuntu user to docker group
+      user:
+        name: ubuntu
+        groups: docker
+        append: yes
+
+    - name: Reset SSH connection to refresh user groups
+      meta: reset_connection
+
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Verify Docker installation
+      command: docker --version
+      register: docker_verify
+      changed_when: false
+      become_user: ubuntu
+
+    - name: Verify Docker Compose installation
+      command: docker compose version
+      register: docker_compose_verify
+      changed_when: false
+      become_user: ubuntu
+
+    - name: Test Docker with hello-world (if newly installed)
+      command: docker run --rm hello-world
+      register: docker_test
+      changed_when: false
+      become_user: ubuntu
+      when: docker_check.rc != 0
+      ignore_errors: yes
+
+    - name: Display installation results
+      debug:
+        msg:
+          - "Docker version: {{ docker_verify.stdout }}"
+          - "Docker Compose version: {{ docker_compose_verify.stdout }}"
+          - "Docker test: {{ 'PASSED' if (docker_test is skipped) or (docker_test.rc == 0) else 'FAILED' }}"

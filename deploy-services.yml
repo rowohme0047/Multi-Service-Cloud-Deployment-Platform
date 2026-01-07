@@ -1,0 +1,208 @@
+---
+- name: Deploy Backend Services
+  hosts: backend
+  become: no
+  tasks:
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy backend docker-compose file
+      copy:
+        src: docker-compose-backend.yml
+        dest: /home/ubuntu/deployment/docker-compose.yml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Login to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+      when: docker_hub_username is defined and docker_hub_password is defined
+
+    - name: Pull all backend images
+      docker_image:
+        name: "{{ item }}"
+        source: pull
+        force_source: yes
+      loop:
+        - "ngdmapo/dmap_app_modernization:agent-v0.0.0"
+        - "ngdmapo/dmap_app_modernization:graphdb-v0.0.0"
+        - "ngdmapo/dmap_app_modernization:s3-v0.0.0"
+        - "ngdmapo/dmap_app_modernization:nginx-v0.0.0"
+        - "ngdmapo/dmap_app_modernization:documentgen-v0.0.0"
+        - "ngdmapo/dmap_app_modernization:kafka_openai-v0.0.0"
+        - "ngdmapo/dmap_ai_infra_provisioning_service:latest"
+
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Stop existing containers
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: absent
+
+    - name: Start backend services
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: present
+
+- name: Deploy Postgres Service
+  hosts: postgres
+  become: no
+  tasks:
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy postgres docker-compose file
+      copy:
+        src: docker-compose-postgres.yml
+        dest: /home/ubuntu/deployment/docker-compose.yml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Login to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+      when: docker_hub_username is defined and docker_hub_password is defined
+
+    - name: Pull postgres image
+      docker_image:
+        name: "ngdmapo/dmap_app_modernization:postgres-v0.0.0"
+        source: pull
+        force_source: yes
+
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Stop existing containers
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: absent
+
+    - name: Start postgres service
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: present
+
+- name: Deploy Neo4j Service
+  hosts: neo4j
+  become: no
+  tasks:
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy neo4j docker-compose file
+      copy:
+        src: docker-compose-neo4j.yml
+        dest: /home/ubuntu/deployment/docker-compose.yml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Login to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+      when: docker_hub_username is defined and docker_hub_password is defined
+
+    - name: Pull neo4j image
+      docker_image:
+        name: "ngdmapo/dmap_app_modernization:neo4j-v0.0.0"
+        source: pull
+        force_source: yes
+
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Stop existing containers
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: absent
+
+    - name: Start neo4j service
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: present
+
+- name: Deploy Kafka Service
+  hosts: kafka
+  become: no
+  tasks:
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Copy kafka docker-compose file
+      copy:
+        src: docker-compose-kafka.yml
+        dest: /home/ubuntu/deployment/docker-compose.yml
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
+
+    - name: Login to Docker Hub
+      community.docker.docker_login:
+        username: "{{ docker_hub_username }}"
+        password: "{{ docker_hub_password }}"
+      when: docker_hub_username is defined and docker_hub_password is defined
+
+    - name: Pull kafka image
+      docker_image:
+        name: "ngdmapo/dmap_app_modernization:kafka-v0.0.0"
+        source: pull
+        force_source: yes
+
+    - name: Create deployment directory
+      file:
+        path: /home/ubuntu/deployment
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    - name: Stop existing containers
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: absent
+
+    - name: Start kafka service
+      community.docker.docker_compose_v2:
+        project_src: /home/ubuntu/deployment
+        state: present
